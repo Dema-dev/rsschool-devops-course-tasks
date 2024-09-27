@@ -11,28 +11,28 @@ permissions:
       pull-requests: write
 
 
-env: 
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  AWS_ROLE: ${{ secrets.AWS_ROLE }}
+# env: 
+#   AWS_REGION: ${{ secrets.AWS_REGION }}
+#   AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
 jobs:
   Connection_and_Pull_repo:
     runs-on: ubuntu-latest
-    environment: production
-    defaults:
-      run:
-        shell: bash
 
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
 
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::913524930772:role/GithubActionsRole
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
+
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -43,9 +43,6 @@ jobs:
     needs: [Connection_and_Pull_repo]
     runs-on: ubuntu-latest
     environment: production
-    defaults:
-      run:
-        shell: bash
     steps:
       - name: run fmt 
         id: fmt
