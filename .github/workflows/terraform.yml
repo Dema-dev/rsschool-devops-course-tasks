@@ -12,7 +12,7 @@ permissions:
 
 
 jobs:
-  Connection_and_Pull_repo:
+  Check_files_init_backend:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,24 +25,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
-
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with: 
           terraform_version: 1.9.6
-  
-  Terraform_fmt:
-    needs: [Connection_and_Pull_repo]
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Git clone the repository
-        uses: actions/checkout@v4
-        
+      
       - name: run fmt 
         id: fmt
-        run: terraform fmt -check
+        run: terraform fmt
+      
+      - name: Terraform Init
+        id: init
+        env:
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+          AWS_BUCKET_KEY_NAME: ${{ secrets.AWS_BUCKET_KEY_NAME }}
+        run: terraform init -backend-config="bucket=${AWS_BUCKET_NAME}" -backend-config="key=${AWS_BUCKET_KEY_NAME}" -backend-config="region=${AWS_REGION}"
+
+      - run: |
+          ls -la
+          pwd
+
