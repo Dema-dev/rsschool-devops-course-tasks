@@ -65,7 +65,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: terra-files
-          
+
+      - run: ls -la
+
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
