@@ -18,7 +18,8 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
-      run: cd terraform/
+        
+      - run: cd terraform/
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
