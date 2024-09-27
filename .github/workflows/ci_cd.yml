@@ -51,10 +51,22 @@ jobs:
           pwd
           echo " "
       
+      - name: Upload Artifact - Terraform files
+        uses: actions/upload-artifact@v4
+        with:
+          name: terra-files
+          path: terraform
+
+  Terraform_plan:
+    needs: Check_files_init_backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Artifact - Terraform files
+        uses: actions/download-artifact@v4
+        with:
+          name: terra-files
       - name: Terraform Plan
         run: terraform plan
-      
-      - name: Terraform Apply
-        run: terraform apply
+
 
 
