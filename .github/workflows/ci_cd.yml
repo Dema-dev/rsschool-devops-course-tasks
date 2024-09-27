@@ -67,10 +67,9 @@ jobs:
         with:
           name: terra-files
           
-
       - run: |
-        ls -la
-        chmod -R +x .terraform/*
+          ls -la
+          chmod -R +x .terraform/*
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
