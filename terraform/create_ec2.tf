@@ -1,6 +1,6 @@
 resource "aws_instance" "my_ubuntu" {
-    ami = "ami-0e86e20dae9224db8"
-    instance_type = "t3.micro"
+    ami = "ami-0e04bcbe83a83792e"
+    instance_type = "t2.nano"
     
     tags = {
         Name = "Ubuntu"
@@ -12,8 +12,8 @@ resource "aws_instance" "my_ubuntu" {
 } 
 
 resource "aws_instance" "myAmazonLinux" {
-    ami = "ami-0ebfd941bbafe70c6"
-    instance_type = "t3.small"
+    ami = "ami-00f07845aed8c0ee7"
+    instance_type = "t2.nano"
 
     tags = {
         Name = "AmazonLinux"
