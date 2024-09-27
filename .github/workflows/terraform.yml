@@ -38,7 +38,7 @@ jobs:
         with: 
           terraform_version: 1.9.6
   
-  Terraform fmt:
+  Terraform_fmt:
     needs: [Connection_and_Pull_repo]
     runs-on: ubuntu-latest
     environment: production
