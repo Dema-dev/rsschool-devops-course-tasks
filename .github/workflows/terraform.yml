@@ -1,0 +1,51 @@
+name: Deploy infra from terraform
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+
+env: 
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  Connection_and_Pull_repo:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with: 
+          terraform_version: 1.9.6
+  
+  Terraform fmt:
+    needs: [Connection_and_Pull_repo]
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: run fmt 
+        id: fmt
+        run: terraform fmt -check
