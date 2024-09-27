@@ -50,7 +50,6 @@ jobs:
           ls -la
           pwd
           echo " "
-          ls -la /.aws/
       
       - name: Terraform Plan
         run: terraform plan
