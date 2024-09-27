@@ -2,8 +2,11 @@ name: Deploy infra from terraform
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main 
   pull_request:
+    branches:
+      - main
 
 permissions:
       id-token: write
@@ -45,11 +48,6 @@ jobs:
           AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
           AWS_BUCKET_KEY_NAME: ${{ secrets.AWS_BUCKET_KEY_NAME }}
         run: terraform init -backend-config="bucket=${AWS_BUCKET_NAME}" -backend-config="key=${AWS_BUCKET_KEY_NAME}" -backend-config="region=${AWS_REGION}"
-
-      - run: |
-          ls -la
-          pwd
-          echo " "
       
       - name: Upload Artifact - Terraform files
         uses: actions/upload-artifact@v4
@@ -68,7 +66,6 @@ jobs:
           name: terra-files
           
       - run: |
-          ls -la
           chmod -R +x .terraform/*
 
       - name: configure aws credentials
@@ -91,7 +88,6 @@ jobs:
           name: terra-files
           
       - run: |
-          ls -la
           chmod -R +x .terraform/*
 
       - name: configure aws credentials
