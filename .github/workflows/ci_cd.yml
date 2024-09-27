@@ -81,5 +81,28 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
 
+  Terraform_apply:
+    needs: [Check_files_init_backend, Terraform_plan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Artifact - Terraform files
+        uses: actions/download-artifact@v4
+        with:
+          name: terra-files
+          
+      - run: |
+          ls -la
+          chmod -R +x .terraform/*
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve -input=false
+
 
 
