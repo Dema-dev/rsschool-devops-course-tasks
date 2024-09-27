@@ -65,6 +65,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: terra-files
+          
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Terraform Plan
         run: terraform plan
 
