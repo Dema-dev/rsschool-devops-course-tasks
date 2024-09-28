@@ -1,13 +1,14 @@
 name: Deploy infra from terraform
 
 on:
-  push:
+  push: 
+    branches: [ "main" ]
   pull_request:
 
 permissions:
       id-token: write
       contents: read
-      pull-requests: write
+
 
 
 jobs:
@@ -25,9 +26,8 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::913524930772:role/GithubActionsRole
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: eu-central-1
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
