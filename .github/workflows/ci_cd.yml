@@ -10,7 +10,6 @@ permissions:
       contents: read
 
 
-
 jobs:
   Check_files_init_backend:
     runs-on: ubuntu-latest
