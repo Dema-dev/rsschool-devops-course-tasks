@@ -61,6 +61,7 @@ resource "aws_route_table_association" "public_subnet_asso" {
 }
 
 resource "aws_eip" "Nat-Gateway-Elastic-IP" {
+    count = length(var.public_subnet_cidrs)
     depends_on = [ aws_route_table_association.public_subnet_asso ]
 }
 
