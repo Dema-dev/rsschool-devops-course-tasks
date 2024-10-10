@@ -68,7 +68,7 @@ resource "aws_eip" "Nat-Gateway-Elastic-IP" {
 resource "aws_nat_gateway" "nat_gt" {
     count = length(var.public_subnet_cidrs)
     subnet_id = element(aws_subnet.public_subnets[*].id, count.index)
-    allocation_id = aws_eip.Nat-Gateway-Elastic-IP[count.index]
+    allocation_id = element(aws_eip.Nat-Gateway-Elastic-IP[*].id, [count.index])
     depends_on = [ aws_internet_gateway.gw ]
 
     tags = {
