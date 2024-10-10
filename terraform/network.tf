@@ -44,15 +44,20 @@ resource "aws_route_table" "public_rt" {
     vpc_id = aws_vpc.underground.id
 
     route = {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = aws_internet_gateway.gw.id
+       
+        
     }
 
     tags = {
       Name = "Public Route Table"
     }
-  
-}
+  }
+
+  resource "aws_route" "public_route" {
+    route_table_id = aws_route_table.public_rt.id
+    gateway_id = aws_internet_gateway.gw.id
+    destination_cidr_block = "0.0.0.0/0"
+  }
 
 resource "aws_route_table_association" "public_subnet_asso" {
     count = length(var.public_subnet_cidrs)
