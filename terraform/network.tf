@@ -43,11 +43,6 @@ resource "aws_internet_gateway" "gw" {
 resource "aws_route_table" "public_rt" {
     vpc_id = aws_vpc.underground.id
 
-    route = {
-       
-        
-    }
-
     tags = {
       Name = "Public Route Table"
     }
