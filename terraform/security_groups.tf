@@ -1,11 +1,10 @@
 resource "aws_security_group" "Bastion-host" {
-  depends_on = [aws_vpc.underground, aws_subnet.public_subnets]
 
   description = "Access to internal recources from allowed server"
   name        = "bastion-host"
   vpc_id      = aws_vpc.underground.id
 
-  ingress = {
+  ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
