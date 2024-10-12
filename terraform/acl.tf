@@ -19,6 +19,8 @@ resource "aws_network_acl" "public_acl" {
     cidr_block = "0.0.0.0/0"
     from_port  = 0
     to_port    = 0
+    icmp_type  = -1
+    icmp_code  = -1
   }
 
   ingress {
@@ -31,18 +33,16 @@ resource "aws_network_acl" "public_acl" {
   }
 
   ingress {
-    protocol   = "udp"
+    protocol   = -1
     rule_no    = 20
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 53
-    to_port    = 53
+    cidr_block = "192.168.0.0/16"
+    from_port  = 0
+    to_port    = 0
   }
 
-
-
   tags = {
-    Name = "public_acl"
+    Name = "Public_acl ${count.index + 1}"
   }
 }
 
@@ -68,37 +68,20 @@ resource "aws_network_acl" "private_acl" {
     cidr_block = "0.0.0.0/0"
     from_port  = 0
     to_port    = 0
+    icmp_type  = -1
+    icmp_code  = -1
   }
 
   ingress {
-    protocol   = "tcp"
+    protocol   = -1
     rule_no    = 10
     action     = "allow"
-    cidr_block = var.public_subnet_cidrs[0]
-    from_port  = 22
-    to_port    = 22
+    cidr_block = "192.168.0.0/16"
+    from_port  = 0
+    to_port    = 0
   }
-
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 11
-    action     = "allow"
-    cidr_block = var.public_subnet_cidrs[1]
-    from_port  = 22
-    to_port    = 22
-  }
-
-  ingress {
-    protocol   = "udp"
-    rule_no    = 20
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 53
-    to_port    = 53
-  }
-
 
   tags = {
-    Name = "private_acl"
+    Name = "Private_acl ${count.index + 1}"
   }
 }

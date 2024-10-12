@@ -15,3 +15,13 @@ variable "azs" {
   description = "Availability Zones"
   default     = ["eu-central-1a", "eu-central-1b"]
 }
+
+variable "PrivateRoute" {
+  type        = list(string)
+  description = "Availability Zones"
+  default     = ["Private Route A", "Private Route B"]
+}
+
+variable "aws_key_name" {
+  default = "aws"
+}

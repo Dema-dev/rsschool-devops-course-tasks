@@ -20,6 +20,14 @@ resource "aws_security_group" "Bastion-host" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Allow all from internal network"
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "output from Bastion Host"
     from_port   = 0
@@ -42,14 +50,6 @@ resource "aws_security_group" "Private-host" {
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Ping"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "ICMP"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
