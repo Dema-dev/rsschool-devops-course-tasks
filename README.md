@@ -1,128 +1,126 @@
-# rsschool-devops-course-tasks
-
-## Use IAM roles to connect GitHub Actions to actions in AWS
-
-### Step 1: Create an OIDC provider in your account
-
-To create an OIDC provider for GitHub (AWS CLI):
-You can add GitHub as an IdP in your account with a single AWS CLI command. For the value —thumbprint-list, you will use the GitHub OIDC thumbprint d89e3bd43d5d909b47a18977aa9d5ce36cee184c.
-
+### Project Structure:
+``` bash
+├── README.md
+├── images
+│   └── task_2
+│      
+└── terraform
+│   ├── acl.tf
+│   ├── create_ec2.tf
+│   ├── iam_oidc_settings.tf
+│   ├── network.tf
+│   ├── providers.tf
+│   ├── s3_tfstate_bucket.tf
+│   ├── security_groups.tf
+│   └── varaiables.tf
+└── .github/
+    └── workflows/
+        └── ci_cd.yml
 ```
-aws iam create-open-id-connect-provider ‐‐url 
-"https://token.actions.githubusercontent.com" ‐‐thumbprint-list 
-"d89e3bd43d5d909b47a18977aa9d5ce36cee184c" ‐‐client-id-list 
-'sts.amazonaws.com'
-```
+----------------------------------
 
-### Step 2: Create an IAM role and scope the trust policy
+### Terraform Code Implementation (50 points)
+> All network configuration keeps here - [network.tf](terraform/network.tf)
 
-1. Create and save a JSON file with the example policy to your local computer with the file name trustpolicyforGitHubOIDC.json. Paste this information.
 
-Allow your unique GitHub organization, repository, and branch to assume the role. This example trusts the GitHub organization _aws-samples_, the repository named _EXAMPLEREPO_, and the branch named _ExampleBranch_. Update the Federated ARN with the GitHub IdP ARN that you copied previously.
+Terraform code is created to configure the following:
+- VPC
+![alt text](images/task_2/vpc_created.png)
 
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "Federated": "<arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com>"
-            },
-            "Action": "sts:AssumeRoleWithWebIdentity",
-            "Condition": {
-                "StringEquals": {
-                    "token.actions.githubusercontent.com:sub": "repo: <aws-samples/EXAMPLEREPO>:ref:refs/heads/<ExampleBranch>",
-                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-                }
-            }
-        }
-    ]
-}
-```
-You can get Federated ARN, using aws command - 
+- 2 public subnets in different AZs
+![alt text](images/task_2/public_subnets.png)
 
-```
-aws iam list-open-id-connect-providers
-```
-and it shows output like this
+![alt text](images/task_2/var_public.png)
 
-```
-{
-    "OpenIDConnectProviderList": [
-        {
-            "Arn": "arn:aws:iam::913524930772:oidc-provider/token.actions.githubusercontent.com"
-        }
-    ]
-}
-```
+- 2 private subnets in different AZs
+![alt text](images/task_2/private_subnets.png)
 
-2. Run the following command to create the role
+![alt text](images/task_2/var_private.png)
 
-```
-aws iam create-role --role-name GitHubAction-AssumeRoleWithAction --assume-role-policy-document file://C:\policies\trustpolicyforGitHubOIDC.json
-```
 
-### Step 3: Assign a minimum level of permissions to the role
+- Internet Gateway
+![alt text](images/task_2/ig.png)
 
-For this example, you won’t add permissions to the IAM role, but will assume the role and call STS GetCallerIdentity to demonstrate a GitHub action that assumes the AWS role.
+- Routing configuration:
 
-If you’re interested in performing additional actions in your account, you can add permissions to the role you created, GitHubAction-AssumeRoleWithAction. Common actions for workflows include calling AWS Lambda functions or pushing files to an Amazon Simple Storage Service (Amazon S3) bucket. For more information about using IAM to apply permissions, see Policies and permissions in IAM.
+Instances in all subnets can reach each other
 
-If you’d like to do a test, you can add permissions as outlined by these blog posts: Complete CI/CD with AWS CodeCommit, AWS CodeBuild, AWS CodeDeploy, and AWS CodePipeline or Techniques for writing least privilege IAM policies.
+![alt text](images/task_2/private_ping.png)
 
-### Step 4: Create a GitHub action to invoke the AWS CLI
+![alt text](images/task_2/public_host.png)
 
-GitHub actions are defined as methods that you can use to automate, customize, and run your software development workflows in GitHub. The GitHub action that you create will authenticate into your account as the role that was created in Step 2: Create the IAM role and scope the trust policy.
+Instances in public subnets can reach addresses outside VPC and vice-versa
 
-To create a GitHub action to invoke the AWS CLI:
+Bastion host in a public subnet 
+![Bastion host](images/task_2/bastion_host_network.png)
 
-Create a basic workflow file, such as main.yml, in the .github/workflows directory of your repository. This sample workflow will assume the GitHubAction-AssumeRoleWithAction role, to perform the action aws sts get-caller-identity. Your repository can have multiple workflows, each performing different sets of tasks. After GitHub is authenticated to the role with the workflow, you can use AWS CLI commands in your account.
+He can reach addresses outside VPC and vise-versa and also all subnets in VPC
 
-2. Paste the following example workflow into the file
+![alt text](images/task_2/ping_bastion.png)
 
-```
-# This is a basic workflow to help you get started with Actions
-name: Connect to an AWS role from a GitHub repository
+![alt text](images/task_2/public_host.png)
 
-# Controls when the action will run. Invokes the workflow on push events but only for the main branch
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+---------------------------
+### Code Organization (10 points)
 
-env:
-  
-  AWS_REGION : "us-east-1" #Change to reflect your Region
+- Variables are defined in a separate variables file.
 
-# Permission can be added at job level or workflow level    
-permissions:
-      id-token: write   # This is required for requesting the JWT
-      contents: read    # This is required for actions/checkout
-jobs:
-  AssumeRoleAndCallIdentity:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git clone the repository
-        uses: actions/checkout@v3
-      - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: arn:aws:iam::1111111111111:role/GithubActionsRole #change to reflect your IAM role’s ARN
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: ${{ env.AWS_REGION }}
-      # Hello from AWS: WhoAmI
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
-```
+All vars here - [varaiables.tf](terraform/varaiables.tf)
 
-3. Modify the workflow to reflect your AWS account information:
-AWS_REGION: Enter the AWS Region for your AWS resources.
-role-to-assume: Replace the ARN with the ARN of the AWS GitHubAction role that you created previously.
-In the example workflow, if there is a push or pull on the repository’s “main” branch, the action that you just created will be invoked.
+- Resources are separated into different files for better organization.
 
-After that push code and your github action starts work.
+![alt text](images/task_2/recources_structure.png)
 
+---------------
+
+### Verification (10 points)
+
+- Terraform plan is executed successfully.
+
+> Check github actions - https://github.com/Dema-dev/rsschool-devops-course-tasks/actions
+
+- A resource map screenshot is provided (VPC -> Your VPCs -> your_VPC_name -> Resource map).
+
+![alt text](images/task_2/resource_map.png)
+
+----------------------------------------
+
+### Additional Tasks (30 points)
+
+- Security Groups and Network ACLs (5 points)
+
+Implement security groups and network ACLs for the VPC and subnets.
+
+> Terraform file for Security groups - [security_groups.tf](terraform/security_groups.tf)
+
+> Terraform file for ACLs - [acl.tf](terraform/acl.tf)
+
+- Bastion Host (5 points)
+Create a bastion host for secure access to the private subnets.
+
+> Bastion host terraform file - [create_ec2.tf](terraform/create_ec2.tf)
+
+![alt text](images/task_2/bastion_host_network.png)
+
+- NAT is implemented for private subnets (10 points)
+
+> NAT settings here - [network.tf](terraform/network.tf)
+
+![alt text](images/task_2/nat_settings.png)
+
+Orginize NAT for private subnets with simpler or cheaper way
+
+![alt text](images/task_2/NAT_A.png) ![alt text](images/task_2/NAT_B.png)
+
+Instances in private subnets should be able to reach addresses outside VPC
+
+![alt text](images/task_2/private_host_network.png)
+
+![alt text](images/task_2/private_ping_out.png)
+
+- Documentation (5 points)
+Document the infrastructure setup and usage in a README file.
+
+- Submission (5 points)
+A GitHub Actions (GHA) pipeline is set up for the Terraform code.
 

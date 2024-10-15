@@ -1,3 +1,4 @@
+#Create VPCs
 resource "aws_vpc" "underground" {
   cidr_block           = "192.168.0.0/16"
   enable_dns_hostnames = true
@@ -7,6 +8,7 @@ resource "aws_vpc" "underground" {
   }
 }
 
+# Create Public Subnets
 resource "aws_subnet" "public_subnets" {
   count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.underground.id
@@ -20,6 +22,7 @@ resource "aws_subnet" "public_subnets" {
   }
 }
 
+# Create Private Subnets
 resource "aws_subnet" "private_subnets" {
   count             = length(var.private_subnet_cidrs)
   vpc_id            = aws_vpc.underground.id
@@ -31,6 +34,7 @@ resource "aws_subnet" "private_subnets" {
   }
 }
 
+#Create Internet Gateway
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.underground.id
 
@@ -87,12 +91,13 @@ resource "aws_route_table_association" "private_subnet_asso" {
 }
 
 
-
+# Create Elastic IPs for NAT gateways
 resource "aws_eip" "Nat-Gateway-Elastic-IP" {
   count      = length(var.public_subnet_cidrs)
   depends_on = [aws_route_table_association.public_subnet_asso]
 }
 
+#Create NAT gateways
 resource "aws_nat_gateway" "nat_gt" {
   count         = length(var.public_subnet_cidrs)
   subnet_id     = element(aws_subnet.public_subnets[*].id, count.index)
