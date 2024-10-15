@@ -19,6 +19,7 @@
 ```
 ----------------------------------
 
+
 ### Terraform Code Implementation (50 points)
 > All network configuration keeps here - [network.tf](terraform/network.tf)
 
