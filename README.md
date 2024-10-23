@@ -1,126 +1,94 @@
 ### Project Structure:
-``` bash
+
+```bash
 ├── README.md
 ├── images
-│   └── task_2
-│      
+│   ├── task_2
+│   └── task_3
 └── terraform
-│   ├── acl.tf
-│   ├── create_ec2.tf
-│   ├── iam_oidc_settings.tf
-│   ├── network.tf
-│   ├── providers.tf
-│   ├── s3_tfstate_bucket.tf
-│   ├── security_groups.tf
-│   └── varaiables.tf
-└── .github/
-    └── workflows/
-        └── ci_cd.yml
+    ├── acl.tf
+    ├── ami.tf
+    ├── ec2_bastion.tf
+    ├── ec2_k3s_master_node.tf
+    ├── ec2_k3s_worker_node.tf
+    ├── iam - not used in this task
+    │   └── iam_oidc_settings.tf
+    ├── network - not used in this task
+    │   ├── acl.tf
+    │   ├── create_ec2.tf
+    │   ├── network.tf
+    │   ├── security_groups.tf
+    │   └── varaiables.tf
+    ├── network.tf
+    ├── providers.tf
+    ├── s3_tfstate - not used in this task
+    │   └── s3_tfstate_bucket.tf
+    ├── security_groups.tf
+    ├── sh
+    │   ├── master_node.sh.tpl
+    │   └── worker_node.sh.tpl
+    └── varaiables.tf
+
 ```
-----------------------------------
+-----------------------------------------------
 
-### Terraform Code Implementation (50 points)
-> All network configuration keeps here - [network.tf](terraform/network.tf)
+1. **Terraform Code for AWS Resources (10 points)**
 
+   - Terraform code is created or extended to manage AWS resources required for the cluster creation.
+   > Created two tf files for creating ec2 instances for master-node [ec2_k3s_master_node.tf](terraform/ec2_k3s_master_node.tf)  and worker-nodes  [ec2_k3s_worker_node.tf](terraform/ec2_k3s_worker_node.tf)
 
-Terraform code is created to configure the following:
-- VPC
-![alt text](images/task_2/vpc_created.png)
+   ![alt text](images/task_3/master_ec2.png)
+   ![alt text](images/task_3/worker_ec2.png)
 
-- 2 public subnets in different AZs
-![alt text](images/task_2/public_subnets.png)
+   - The code includes the creation of a bastion host.
 
-![alt text](images/task_2/var_public.png)
+   > File for creation bastion host [ec2_bastion.tf](terraform/ec2_bastion.tf)
 
-- 2 private subnets in different AZs
-![alt text](images/task_2/private_subnets.png)
-
-![alt text](images/task_2/var_private.png)
+   ![alt text](images/task_3/bastion_ec2.png)
 
 
-- Internet Gateway
-![alt text](images/task_2/ig.png)
+2. **Cluster Deployment (60 points)**
 
-- Routing configuration:
+   - A K8s cluster is deployed using either kOps or k3s.
 
-Instances in all subnets can reach each other
+   - The deployment method is chosen based on the user's preference and understanding of the trade-offs.
 
-![alt text](images/task_2/private_ping.png)
+     For my project I choose k3s. 
 
-![alt text](images/task_2/public_host.png)
+    ![alt text](images/task_3/k3s_service.png)
 
-Instances in public subnets can reach addresses outside VPC and vice-versa
+3. **Cluster Verification (10 points)**
 
-Bastion host in a public subnet 
-![Bastion host](images/task_2/bastion_host_network.png)
+   - The cluster is verified by running the `kubectl get nodes` command from the local computer.
+   
+   - A screenshot of the `kubectl get nodes` command output is provided.
 
-He can reach addresses outside VPC and vise-versa and also all subnets in VPC
+    ![alt text](images/task_3/get_nodes.png)
 
-![alt text](images/task_2/ping_bastion.png)
+4. **Workload Deployment (10 points)**
 
-![alt text](images/task_2/public_host.png)
+   - A simple workload is deployed on the cluster using `kubectl apply -f https://k8s.io/examples/pods/simple-pod.yaml`.
+   - The workload runs successfully on the cluster.
 
----------------------------
-### Code Organization (10 points)
+   ![alt text](images/task_3/get_pods.png)
 
-- Variables are defined in a separate variables file.
+5. **Additional Tasks (10 points)**
+   - Document the cluster setup and deployment process in a README file.
 
-All vars here - [varaiables.tf](terraform/varaiables.tf)
+   For setup cluster use this command 
+   > curl -sfL https://get.k3s.io | sh 
 
-- Resources are separated into different files for better organization.
+   I am using sh scripts for setting master-node EC2 [master_node.sh.tpl](terraform/sh/master_node.sh.tpl) and worker-nodes EC2 [worker_node.sh.tpl](terraform/sh/worker_node.sh.tpl) and setup cluster on master node
+   
+   After that I am connect to the worker node and add it to my cluster using this command
 
-![alt text](images/task_2/recources_structure.png)
+   > curl -sfL https://get.k3s.io | K3S_URL=https://myserver:6443 K3S_TOKEN=mynodetoken sh -
 
----------------
+   Where myserver is a master-node, K3S_TOKEN you can find on master node in this path "/var/lib/rancher/k3s/server/node-token"
 
-### Verification (10 points)
+   For add role to node use this command
 
-- Terraform plan is executed successfully.
+   > sudo kubectl label node your_node_name node-role.kubernetes.io/worker=worker
 
-> Check github actions - https://github.com/Dema-dev/rsschool-devops-course-tasks/actions
-
-- A resource map screenshot is provided (VPC -> Your VPCs -> your_VPC_name -> Resource map).
-
-![alt text](images/task_2/resource_map.png)
-
-----------------------------------------
-
-### Additional Tasks (30 points)
-
-- Security Groups and Network ACLs (5 points)
-
-Implement security groups and network ACLs for the VPC and subnets.
-
-> Terraform file for Security groups - [security_groups.tf](terraform/security_groups.tf)
-
-> Terraform file for ACLs - [acl.tf](terraform/acl.tf)
-
-- Bastion Host (5 points)
-Create a bastion host for secure access to the private subnets.
-
-> Bastion host terraform file - [create_ec2.tf](terraform/create_ec2.tf)
-
-![alt text](images/task_2/bastion_host_network.png)
-
-- NAT is implemented for private subnets (10 points)
-
-> NAT settings here - [network.tf](terraform/network.tf)
-
-![alt text](images/task_2/nat_settings.png)
-
-Orginize NAT for private subnets with simpler or cheaper way
-
-![alt text](images/task_2/NAT_A.png) ![alt text](images/task_2/NAT_B.png)
-
-Instances in private subnets should be able to reach addresses outside VPC
-
-![alt text](images/task_2/private_host_network.png)
-
-![alt text](images/task_2/private_ping_out.png)
-
-- Documentation (5 points)
-Document the infrastructure setup and usage in a README file.
-
-- Submission (5 points)
-A GitHub Actions (GHA) pipeline is set up for the Terraform code.
+   Thats enough to create simple cluster.
 
