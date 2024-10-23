@@ -93,13 +93,15 @@ resource "aws_route_table_association" "private_subnet_asso" {
 
 # Create Elastic IPs for NAT gateways
 resource "aws_eip" "Nat-Gateway-Elastic-IP" {
-
+  count      = length(var.public_subnet_cidrs)
+  depends_on = [aws_route_table_association.public_subnet_asso]
 }
 
 #Create NAT gateways
 resource "aws_nat_gateway" "nat_gt" {
-  subnet_id     = aws_subnet.public_subnets[0].id
-  allocation_id =aws_eip.Nat-Gateway-Elastic-IP.id
+  count         = length(var.public_subnet_cidrs)
+  subnet_id     = element(aws_subnet.public_subnets[*].id, count.index)
+  allocation_id = element(aws_eip.Nat-Gateway-Elastic-IP[*].id, count.index)
   depends_on    = [aws_internet_gateway.gw]
 
   tags = {

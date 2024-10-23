@@ -25,3 +25,45 @@ variable "PrivateRoute" {
 variable "aws_key_name" {
   default = "aws"
 }
+
+variable "k3s_master_instance_type" {
+  description = "instance type for k8s node"
+  default = "t3.small"
+}
+
+variable "k8s_master_node_disk" {
+  description = "disk type for k8s node"
+  default = {
+    size = 30
+    type = "gp3"
+  }
+}
+
+variable "k3s_worker_node_count" {
+  description = "Number of kuber workers nodes to create"
+  default     = 1
+}
+
+variable "k8s_worker_node_type" {
+  description = "instance type for k8s node"
+  default     = "t3a.small"
+}
+
+variable "k8s_worker_node_disk" {
+  description = "disk type for k8s node"
+  default = {
+    size = 50
+    type = "gp3"
+  }
+}
+
+variable "k8s_worker_node_tenancy" {
+  description = "provision tenancy for k8s node"
+  default     = "default"
+}
+
+variable "path_sh" {
+  default = "./sh"
+  
+}
+
