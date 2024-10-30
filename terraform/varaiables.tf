@@ -67,3 +67,9 @@ variable "path_sh" {
   
 }
 
+variable "static_private_ip" {
+  description = "static ip for master node"
+  type = string
+  default = "192.168.1.5"
+}
+
