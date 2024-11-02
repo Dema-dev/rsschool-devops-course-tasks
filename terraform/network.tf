@@ -91,7 +91,7 @@ resource "aws_route_table_association" "private_subnet_asso" {
 }
 
 
-# Create Elastic IPs for NAT gateways
+#Create Elastic IPs for NAT gateways
 resource "aws_eip" "Nat-Gateway-Elastic-IP" {
 
 }

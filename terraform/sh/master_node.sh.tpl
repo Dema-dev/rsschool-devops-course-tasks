@@ -5,10 +5,10 @@ hostnamectl set-hostname "${hostname}" # Set hostname
 apt-get update
 apt install docker.io # install docker
 
-touch .ssh/aws.pem
-chmod 600 .ssh/aws.pem
+touch /home/ubuntu/.ssh/aws.pem
+chmod 600 /home/ubuntu/.ssh/aws.pem
 
-curl -sfL https://get.k3s.io | sh - # Install k3s and auto creating cluster
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san $(curl -s 2ip.io)" sh - # Install k3s and auto creating cluster
 
 sudo mkdir ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
@@ -22,9 +22,10 @@ sudo apt-get update
 sudo apt-get install helm -y
 
 #add the Jenkins repo
-helm repo add jenkinsci https://charts.jenkins.io
-helm repo update
+sudo helm repo add jenkinsci https://charts.jenkins.io
+sudo helm repo update
 
+mkdir /tmp/jenkins-volume/
+chown -R 1000:1000 /tmp/jenkins-volume
 
-#create folder for Jenkins volume
-mkdir /home/ubuntu/jenkins-volume
+kubectl create namespace jenkins

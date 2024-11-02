@@ -38,3 +38,4 @@ terraform.rc
 
 kube_resources/k3s.yaml
 kube_resources/connection.txt
+kube_resources/training/
