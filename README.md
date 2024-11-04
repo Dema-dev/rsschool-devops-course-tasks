@@ -1,126 +1,84 @@
 ### Project Structure:
-``` bash
+
+```bash
+
 ├── README.md
 ├── images
-│   └── task_2
-│      
+│   ├── task_2
+│   ├── task_3
+│   └── task_4
+├── kube_resources
+│   ├── jenkins-kuber-without-helm - Not used in this task
+│   ├── jenkins-sa.yaml
+│   ├── jenkins-values.yaml
+│   ├── jenkins-volume.yaml
 └── terraform
-│   ├── acl.tf
-│   ├── create_ec2.tf
-│   ├── iam_oidc_settings.tf
-│   ├── network.tf
-│   ├── providers.tf
-│   ├── s3_tfstate_bucket.tf
-│   ├── security_groups.tf
-│   └── varaiables.tf
-└── .github/
-    └── workflows/
-        └── ci_cd.yml
+    ├── acl.tf
+    ├── ami.tf
+    ├── ec2_bastion.tf
+    ├── ec2_k3s_master_node.tf
+    ├── ec2_k3s_worker_node.tf
+    ├── iam - Not used in this task
+    ├── network - Not used in this task
+    ├── network.tf
+    ├── providers.tf
+    ├── s3_tfstate - Not used in this task
+    ├── security_groups.tf
+    ├── sh
+    │   ├── master_node.sh.tpl
+    │   └── worker_node.sh.tpl
+    └── varaiables.tf
+
+
 ```
-----------------------------------
+-----------------------------------------------
 
-### Terraform Code Implementation (50 points)
-> All network configuration keeps here - [network.tf](terraform/network.tf)
+## Evaluation Criteria (100 points for covering all criteria)
 
+1. **Helm Installation and Verification (10 points)**
 
-Terraform code is created to configure the following:
-- VPC
-![alt text](images/task_2/vpc_created.png)
+   - Helm is installed and verified by deploying the Nginx chart.
+ 
+   ![alt text](images/task_4/check_helm_inst.png)
+   ![alt text](images/task_4/check_helm_inst2.png)    
 
-- 2 public subnets in different AZs
-![alt text](images/task_2/public_subnets.png)
+2. **Cluster Requirements (10 points)**
 
-![alt text](images/task_2/var_public.png)
+   - The cluster has a solution for managing persistent volumes (PV) and persistent volume claims (PVC).
 
-- 2 private subnets in different AZs
-![alt text](images/task_2/private_subnets.png)
+   > File for creation persisten volume for jenkins service - [jenkins-volume.yaml](kube_resources/jenkins-volume.yaml)
 
-![alt text](images/task_2/var_private.png)
+   > This volume claims here - [jenkins-values.yaml](kube_resources/jenkins-values.yaml), line number 1253
 
+3. **Jenkins Installation (50 points)**
 
-- Internet Gateway
-![alt text](images/task_2/ig.png)
+   - Jenkins is installed using Helm in a separate namespace.
+    
+    ![alt text](images/task_4/jenkins_via_helm.png)
 
-- Routing configuration:
+   - Jenkins is available from the internet.
 
-Instances in all subnets can reach each other
+   ![alt text](images/task_4/master_ec2.png)
+   ![alt text](images/task_4/jenkins_access.png)
 
-![alt text](images/task_2/private_ping.png)
+4. **Jenkins Configuration (10 points)**
 
-![alt text](images/task_2/public_host.png)
+   - Jenkins configuration is stored on a persistent volume and is not lost when Jenkins' pod is terminated.
 
-Instances in public subnets can reach addresses outside VPC and vice-versa
+    > Before delete
+   ![alt text](images/task_4/before_delete.png)
 
-Bastion host in a public subnet 
-![Bastion host](images/task_2/bastion_host_network.png)
+   > After delete
+   ![alt text](images/task_4/after_delete.png)
 
-He can reach addresses outside VPC and vise-versa and also all subnets in VPC
+5. **Verification (10 points)**
 
-![alt text](images/task_2/ping_bastion.png)
+   - A simple Jenkins freestyle project is created and runs successfully, writing "Hello world" into the log.
 
-![alt text](images/task_2/public_host.png)
+   ![alt text](images/task_4/jenkins_job.png)
 
----------------------------
-### Code Organization (10 points)
-
-- Variables are defined in a separate variables file.
-
-All vars here - [varaiables.tf](terraform/varaiables.tf)
-
-- Resources are separated into different files for better organization.
-
-![alt text](images/task_2/recources_structure.png)
-
----------------
-
-### Verification (10 points)
-
-- Terraform plan is executed successfully.
-
-> Check github actions - https://github.com/Dema-dev/rsschool-devops-course-tasks/actions
-
-- A resource map screenshot is provided (VPC -> Your VPCs -> your_VPC_name -> Resource map).
-
-![alt text](images/task_2/resource_map.png)
-
-----------------------------------------
-
-### Additional Tasks (30 points)
-
-- Security Groups and Network ACLs (5 points)
-
-Implement security groups and network ACLs for the VPC and subnets.
-
-> Terraform file for Security groups - [security_groups.tf](terraform/security_groups.tf)
-
-> Terraform file for ACLs - [acl.tf](terraform/acl.tf)
-
-- Bastion Host (5 points)
-Create a bastion host for secure access to the private subnets.
-
-> Bastion host terraform file - [create_ec2.tf](terraform/create_ec2.tf)
-
-![alt text](images/task_2/bastion_host_network.png)
-
-- NAT is implemented for private subnets (10 points)
-
-> NAT settings here - [network.tf](terraform/network.tf)
-
-![alt text](images/task_2/nat_settings.png)
-
-Orginize NAT for private subnets with simpler or cheaper way
-
-![alt text](images/task_2/NAT_A.png) ![alt text](images/task_2/NAT_B.png)
-
-Instances in private subnets should be able to reach addresses outside VPC
-
-![alt text](images/task_2/private_host_network.png)
-
-![alt text](images/task_2/private_ping_out.png)
-
-- Documentation (5 points)
-Document the infrastructure setup and usage in a README file.
-
-- Submission (5 points)
-A GitHub Actions (GHA) pipeline is set up for the Terraform code.
-
+6. **Additional Tasks (10 points)**
+   - **GitHub Actions (GHA) Pipeline (5 points)**
+     - A GHA pipeline is set up to deploy Jenkins.
+   - **Authentication and Security (5 points)**
+     - Authentication and security settings are configured for Jenkins.

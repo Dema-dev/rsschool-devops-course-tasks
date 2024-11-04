@@ -20,7 +20,7 @@ resource "aws_instance" "Private-Host" {
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.private_subnets[0].id
   key_name = "${var.aws_key_name}"
-
+  
 
   # Security group ID's
   vpc_security_group_ids = [aws_security_group.Private-host.id]
