@@ -8,7 +8,7 @@ apt install docker.io # install docker
 touch /home/ubuntu/.ssh/aws.pem
 chmod 600 /home/ubuntu/.ssh/aws.pem
 
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san $(curl -s 2ip.io)" sh - # Install k3s and auto creating cluster
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san $(curl -s 2ip.io)" sh - # Install k3s and auto creating cluster with public ip
 
 sudo mkdir ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
@@ -25,7 +25,9 @@ sudo apt-get install helm -y
 sudo helm repo add jenkinsci https://charts.jenkins.io
 sudo helm repo update
 
+# add folder for jenkins persistent volume
 mkdir /tmp/jenkins-volume/
 chown -R 1000:1000 /tmp/jenkins-volume
 
+# create namespace for jenkins resourses in helm/kubernetes
 kubectl create namespace jenkins
