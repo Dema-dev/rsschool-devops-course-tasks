@@ -32,8 +32,10 @@ sudo helm repo update
 # create namespace for jenkins resourses in helm/kubernetes
 # kubectl create namespace jenkins
 
+#wordpress auto running
 mkdir -p /opt/helm
 cd /opt/helm
 git clone https://github.com/Dema-dev/rsschool-devops-course-tasks.git ./
 git checkout task_5
-helm install my-wordpress -f ./kube_resources/wordpress-helm/values.yaml oci://registry-1.docker.io/bitnamicharts/wordpress
+cd /opt/helm/kube_resources/wordpress-helm
+sudo helm install my-wordpress -f values.yaml oci://registry-1.docker.io/bitnamicharts/wordpress
