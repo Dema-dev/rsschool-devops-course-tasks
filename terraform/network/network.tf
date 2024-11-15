@@ -66,43 +66,45 @@ resource "aws_route_table_association" "public_subnet_asso" {
   route_table_id = aws_route_table.public_rt.id
 }
 
-# # create Route table for Private subnets and associate it
-# resource "aws_route_table" "private_rt" {
-#   vpc_id = aws_vpc.underground.id
+# create Route table for Private subnets and associate it
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.underground.id
 
-#   count = length(var.PrivateRoute)
+  count = length(var.PrivateRoute)
 
-#   tags = {
-#     Name = element(var.PrivateRoute, count.index)
-#   }
-# }
+  tags = {
+    Name = element(var.PrivateRoute, count.index)
+  }
+}
 
-# resource "aws_route" "private_route" {
-#   count                  = length(var.PrivateRoute)
-#   route_table_id         = element(aws_route_table.private_rt[*].id, count.index)
-#   nat_gateway_id         = element(aws_nat_gateway.nat_gt[*].id, count.index)
-#   destination_cidr_block = "0.0.0.0/0"
-# }
+resource "aws_route" "private_route" {
+  count                  = length(var.PrivateRoute)
+  route_table_id         = element(aws_route_table.private_rt[*].id, count.index)
+  nat_gateway_id         = element(aws_nat_gateway.nat_gt[*].id, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+}
 
-# resource "aws_route_table_association" "private_subnet_asso" {
-#   count          = length(var.private_subnet_cidrs)
-#   subnet_id      = element(aws_subnet.private_subnets[*].id, count.index)
-#   route_table_id = element(aws_route_table.private_rt[*].id, count.index)
-# }
+resource "aws_route_table_association" "private_subnet_asso" {
+  count          = length(var.private_subnet_cidrs)
+  subnet_id      = element(aws_subnet.private_subnets[*].id, count.index)
+  route_table_id = element(aws_route_table.private_rt[*].id, count.index)
+}
 
 
-# #Create Elastic IPs for NAT gateways
-# resource "aws_eip" "Nat-Gateway-Elastic-IP" {
+# Create Elastic IPs for NAT gateways
+resource "aws_eip" "Nat-Gateway-Elastic-IP" {
+  count      = length(var.public_subnet_cidrs)
+  depends_on = [aws_route_table_association.public_subnet_asso]
+}
 
-# }
+#Create NAT gateways
+resource "aws_nat_gateway" "nat_gt" {
+  count         = length(var.public_subnet_cidrs)
+  subnet_id     = element(aws_subnet.public_subnets[*].id, count.index)
+  allocation_id = element(aws_eip.Nat-Gateway-Elastic-IP[*].id, count.index)
+  depends_on    = [aws_internet_gateway.gw]
 
-# #Create NAT gateways
-# resource "aws_nat_gateway" "nat_gt" {
-#   subnet_id     = aws_subnet.public_subnets[0].id
-#   allocation_id =aws_eip.Nat-Gateway-Elastic-IP.id
-#   depends_on    = [aws_internet_gateway.gw]
-
-#   tags = {
-#     Name = "NAT GT"
-#   }
-# }
+  tags = {
+    Name = "NAT GT"
+  }
+}

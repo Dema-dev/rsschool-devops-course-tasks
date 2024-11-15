@@ -21,7 +21,7 @@ resource "aws_security_group" "Bastion-host" {
   }
 
   ingress {
-    description = "Allow all from all networks"
+    description = "Allow all from internal network"
     from_port   = 0
     to_port     = 0
     protocol    = -1
