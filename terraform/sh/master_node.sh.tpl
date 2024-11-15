@@ -26,8 +26,14 @@ sudo helm repo add jenkinsci https://charts.jenkins.io
 sudo helm repo update
 
 # add folder for jenkins persistent volume
-mkdir /tmp/jenkins-volume/
-chown -R 1000:1000 /tmp/jenkins-volume
+# mkdir /tmp/jenkins-volume/
+# chown -R 1000:1000 /tmp/jenkins-volume
 
 # create namespace for jenkins resourses in helm/kubernetes
-kubectl create namespace jenkins
+# kubectl create namespace jenkins
+
+mkdir -p /opt/helm
+cd /opt/helm
+git clone https://github.com/Dema-dev/rsschool-devops-course-tasks.git ./
+git checkout task_5
+helm install my-wordpress -f ./kube_resources/wordpress-helm/values.yaml oci://registry-1.docker.io/bitnamicharts/wordpress
