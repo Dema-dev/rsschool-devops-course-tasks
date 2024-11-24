@@ -41,15 +41,6 @@ resource "aws_network_acl" "public_acl" {
     to_port    = 0
   }
 
-  ingress {
-    protocol   = -1
-    rule_no    = 1
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
-  }
-
   tags = {
     Name = "Public_acl ${count.index + 1}"
   }
@@ -86,15 +77,6 @@ resource "aws_network_acl" "private_acl" {
     rule_no    = 10
     action     = "allow"
     cidr_block = "192.168.0.0/16"
-    from_port  = 0
-    to_port    = 0
-  }
-
-  ingress {
-    protocol   = -1
-    rule_no    = 1
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
     from_port  = 0
     to_port    = 0
   }
